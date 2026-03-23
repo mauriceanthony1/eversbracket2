@@ -1,0 +1,16 @@
+{
+  "name": "eversbracket",
+  "version": "1.0.0",
+  "description": "2026 NCAA Bracket Challenge",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
