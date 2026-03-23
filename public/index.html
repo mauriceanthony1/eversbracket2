@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <title>2026 NCAA Bracket Challenge</title>
 <style>
-/* ââ Reset & base ââ */
+/*  Reset & base  */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --bg:      #0d1117;
@@ -28,7 +28,7 @@
 }
 body { min-height: 100vh; display: flex; flex-direction: column; }
 
-/* ââ Header ââ */
+/*  Header  */
 header {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -44,7 +44,7 @@ header h1 { font-size: 1rem; font-weight: 700; letter-spacing: -.3px; }
 .live-dot.red { background: var(--live); animation: pulse 1.2s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
-/* ââ Nav ââ */
+/*  Nav  */
 nav.main-nav {
   display: flex;
   background: var(--surface);
@@ -63,10 +63,10 @@ nav.main-nav button {
 }
 nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* ââ Tab panes ââ */
+/*  Tab panes  */
 .tab-pane { display: none; padding: 12px 14px 80px; max-width: 640px; margin: 0 auto; width: 100%; }
 
-/* ââ Toast ââ */
+/*  Toast  */
 #toast {
   position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(10px);
   background: var(--card); border: 1px solid var(--border); border-radius: 8px;
@@ -75,12 +75,12 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ââ Save status ââ */
+/*  Save status  */
 .save-status { font-size: .72rem; color: var(--muted); text-align: right; min-height: 16px; margin-top: 4px; }
 .save-status.saving { color: var(--accent); }
 .save-status.saved  { color: var(--green); }
 
-/* ââ Leaderboard ââ */
+/*  Leaderboard  */
 .leaderboard-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden; margin-bottom: 12px;
@@ -111,7 +111,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
   margin: 14px 0 6px;
 }
 
-/* ââ Bracket tab (region list) ââ */
+/*  Bracket tab (region list)  */
 .region-title {
   font-size: .75rem; font-weight: 800; letter-spacing: 1px;
   padding: 8px 0 6px; margin-top: 10px;
@@ -142,7 +142,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 .game-status.live  { background: #2d1111; color: var(--live); }
 .game-status.final { background: var(--surface); color: var(--muted); }
 
-/* ââ Picks tab ââ */
+/*  Picks tab  */
 #user-selector { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .user-btn {
   padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
@@ -164,7 +164,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 .rtab.midwest.active { background: #2a2413; border-color: #e9c46a; color: #e9c46a; }
 .rtab.ff.active      { background: #1e1530; border-color: #9b59b6; color: #9b59b6; }
 
-/* ââ Bracket tree ââ */
+/*  Bracket tree  */
 #b-tree { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
 .b-col { display: flex; flex-direction: column; min-width: 150px; max-width: 170px; flex-shrink: 0; }
 .b-col-hdr {
@@ -208,7 +208,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 .ll { font-size: .78rem; font-weight: 700; }
 .lh { font-size: .68rem; }
 
-/* ââ Scores tab ââ */
+/*  Scores tab  */
 .scores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 8px; }
 .score-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .score-status-bar {
@@ -225,7 +225,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 .sn { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sp { font-weight: 700; font-size: .96rem; }
 
-/* ââ Compare tab ââ */
+/*  Compare tab  */
 .compare-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
 .compare-hdr {
   display: grid; grid-template-columns: 1fr repeat(3, 60px);
@@ -240,7 +240,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 .cc { text-align: center; font-size: .82rem; }
 .cc.has { color: var(--green); font-weight: 700; }
 
-/* ââ Empty state ââ */
+/*  Empty state  */
 .empty-state {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 48px 20px; text-align: center; color: var(--muted);
@@ -248,7 +248,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
 .empty-state p { font-size: .88rem; }
 
-/* ââ Mobile bottom padding ââ */
+/*  Mobile bottom padding  */
 @media (max-width: 480px) {
   nav.main-nav button { min-width: 60px; }
   .b-col { min-width: 130px; }
@@ -261,7 +261,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
   <h1>2026 NCAA Bracket Challenge</h1>
   <div class="live-badge">
     <div class="live-dot" id="live-dot"></div>
-    <span id="live-text">Connectingâ¦</span>
+    <span id="live-text">Connecting</span>
   </div>
 </header>
 
@@ -289,7 +289,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 <div id="toast"></div>
 
 <script>
-/* âââââââââââââââââââ CONSTANTS âââââââââââââââââââ */
+/*  CONSTANTS  */
 const USERS = ['PME','Phil','Reece'];
 const ROUNDS = ['R64','R32','S16','E8','F4','CHIP'];
 const ROUND_LABELS = { R64:'Round of 64', R32:'Round of 32', S16:'Sweet 16', E8:'Elite 8', F4:'Final Four', CHIP:'Championship' };
@@ -304,7 +304,7 @@ const ROFF = {
   MIDWEST: { R64:24, R32:12, S16:6, E8:3 },
 };
 
-/* âââââââââââââââââââ STATE âââââââââââââââââââ */
+/*  STATE  */
 let bracketData    = null;
 let scoresData     = [];
 let leaderboardData= [];
@@ -314,7 +314,7 @@ let currentRegion  = 'EAST';
 let currentTab     = 'leaderboard';
 let saveTimer      = null;
 
-/* âââââââââââââââââââ NAV âââââââââââââââââââ */
+/*  NAV  */
 function showTab(tab) {
   document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
   document.querySelectorAll('nav.main-nav button').forEach(b => b.classList.remove('active'));
@@ -331,7 +331,7 @@ document.querySelectorAll('nav.main-nav button').forEach(b =>
   b.addEventListener('click', () => showTab(b.dataset.tab))
 );
 
-/* âââââââââââââââââââ UTIL âââââââââââââââââââ */
+/*  UTIL  */
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -343,7 +343,7 @@ async function apiFetch(url) {
 }
 function gp(user, round, gi) { return ((allPicks[user]||{})[round]||[])[gi] || ''; }
 
-/* âââââââââââââââââââ PICK SET + CASCADE âââââââââââââââââââ */
+/*  PICK SET + CASCADE  */
 function setPick(user, round, gi, team) {
   if (!allPicks[user]) allPicks[user] = {};
   if (!allPicks[user][round]) allPicks[user][round] = [];
@@ -365,7 +365,7 @@ function cascade(user, round, gi, oldTeam) {
   }
 }
 
-/* âââââââââââââââââââ LOAD âââââââââââââââââââ */
+/*  LOAD  */
 async function loadAll() {
   const [bracket, scores, lb] = await Promise.all([
     apiFetch('/api/bracket'),
@@ -388,15 +388,15 @@ async function loadAll() {
   if (currentTab === 'compare')     renderCompare();
 }
 
-/* âââââââââââââââââââ LEADERBOARD âââââââââââââââââââ */
+/*  LEADERBOARD  */
 function renderLeaderboard() {
   const el = document.getElementById('leaderboard');
   if (!leaderboardData.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Loadingâ¦</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Loading</p></div>';
     return;
   }
   let h = '<div class="leaderboard-card">';
-  h += '<div class="lb-header"><div>Rank</div><div>Player</div><div style="text-align:right">Pts</div><div style="text-align:right">â</div></div>';
+  h += '<div class="lb-header"><div>Rank</div><div>Player</div><div style="text-align:right">Pts</div><div style="text-align:right"></div></div>';
   leaderboardData.forEach((row, i) => {
     const med = ['rank-1','rank-2','rank-3'][i] || '';
     h += `<div class="lb-row">
@@ -419,7 +419,7 @@ function renderLeaderboard() {
   el.innerHTML = h;
 }
 
-/* âââââââââââââââââââ BRACKET TAB âââââââââââââââââââ */
+/*  BRACKET TAB  */
 function getGameScore(t1, t2) {
   return scoresData.find(g =>
     g.teams && g.teams.length === 2 &&
@@ -429,7 +429,7 @@ function getGameScore(t1, t2) {
 }
 function renderBracket() {
   const el = document.getElementById('bracket');
-  if (!bracketData) { el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Loadingâ¦</p></div>'; return; }
+  if (!bracketData) { el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Loading</p></div>'; return; }
   let h = '';
   Object.entries(bracketData.bracket).forEach(([region, matchups]) => {
     h += `<div class="region-title ${region.toLowerCase()}">${region} REGION</div>`;
@@ -441,7 +441,7 @@ function renderBracket() {
         const t2 = game.teams.find(t => t.name && t.name.includes(m.team2.split(' ')[0]));
         if (t1) t1s = t1.score || '';
         if (t2) t2s = t2.score || '';
-        if (game.statusState === 'in')   { stTxt = `LIVE Â· ${game.statusDetail||''}`; stCls = 'live'; }
+        if (game.statusState === 'in')   { stTxt = `LIVE  ${game.statusDetail||''}`; stCls = 'live'; }
         else if (game.statusState === 'post') { stTxt = 'FINAL'; stCls = 'final'; }
         else { stTxt = game.statusDetail || ''; }
       }
@@ -465,7 +465,7 @@ function renderBracket() {
   el.innerHTML = h;
 }
 
-/* âââââââââââââââââââ PICKS SHELL âââââââââââââââââââ */
+/*  PICKS SHELL  */
 function renderPicksShell() {
   document.getElementById('user-selector').innerHTML =
     USERS.map(u => `<button class="user-btn ${u===currentUser?'active':''}" onclick="selectUser('${u}')">${u}</button>`).join('');
@@ -481,10 +481,10 @@ function renderPicksShell() {
 function selectUser(u)   { currentUser   = u; renderPicksShell(); }
 function selectRegion(r) { currentRegion = r; renderPicksShell(); }
 
-/* âââââââââââââââââââ BRACKET TREE âââââââââââââââââââ */
+/*  BRACKET TREE  */
 function renderBracketTree() {
   const ct = document.getElementById('b-tree');
-  if (!bracketData) { ct.innerHTML = '<div style="padding:40px;color:var(--muted)">Loadingâ¦</div>'; return; }
+  if (!bracketData) { ct.innerHTML = '<div style="padding:40px;color:var(--muted)">Loading</div>'; return; }
   ct.innerHTML = currentRegion === 'FF' ? buildFFTree() : buildRegionTree(currentRegion);
 }
 function buildRegionTree(region) {
@@ -603,19 +603,19 @@ function buildFFTree() {
   return h;
 }
 
-/* âââ Card helpers âââ */
+/*  Card helpers  */
 function colHdr(round, pts) { return `<div class="b-col-hdr">${ROUND_SHORT[round]} <span>${pts}pt</span></div>`; }
-function lockedInner(hint)  { return `<div class="b-lock-inner"><div class="li">ð</div><div class="ll">Locked</div><div class="lh">${hint}</div></div>`; }
+function lockedInner(hint)  { return `<div class="b-lock-inner"><div class="li"></div><div class="ll">Locked</div><div class="lh">${hint}</div></div>`; }
 function r64Card(gi, t1, s1, t2, s2, pick, regionColor) {
   const p1=pick===t1, p2=pick===t2;
   const esc = s => s.replace(/'/g,"\\'");
   return `<div class="b-game">
     <div class="b-team ${p1?'b-picked':''}" onclick="handlePick('R64',${gi},'${esc(t1)}')">
-      <div class="b-seed-num">${s1}</div><div class="b-tname">${t1}</div>${p1?'<div class="b-chk">â</div>':''}
+      <div class="b-seed-num">${s1}</div><div class="b-tname">${t1}</div>${p1?'<div class="b-chk"></div>':''}
     </div>
     <div class="b-vs">VS</div>
     <div class="b-team ${p2?'b-picked':''}" onclick="handlePick('R64',${gi},'${esc(t2)}')">
-      <div class="b-seed-num">${s2}</div><div class="b-tname">${t2}</div>${p2?'<div class="b-chk">â</div>':''}
+      <div class="b-seed-num">${s2}</div><div class="b-tname">${t2}</div>${p2?'<div class="b-chk"></div>':''}
     </div>
   </div>`;
 }
@@ -625,13 +625,13 @@ function advCard(gi, round, tA, tB, pick, regionColor) {
   const rowA = tA ? `<div class="b-team ${pA?'b-picked':''}" onclick="handlePick('${round}',${gi},'${esc(tA)}')">` : `<div class="b-team b-disabled">`;
   const rowB = tB ? `<div class="b-team ${pB?'b-picked':''}" onclick="handlePick('${round}',${gi},'${esc(tB)}')">` : `<div class="b-team b-disabled">`;
   return `<div class="b-game">
-    ${rowA}<div class="b-tname">${tA||'TBD'}</div>${pA?'<div class="b-chk">â</div>':''}</div>
+    ${rowA}<div class="b-tname">${tA||'TBD'}</div>${pA?'<div class="b-chk"></div>':''}</div>
     <div class="b-vs">VS</div>
-    ${rowB}<div class="b-tname">${tB||'TBD'}</div>${pB?'<div class="b-chk">â</div>':''}</div>
+    ${rowB}<div class="b-tname">${tB||'TBD'}</div>${pB?'<div class="b-chk"></div>':''}</div>
   </div>`;
 }
 
-/* âââââââââââââââââââ PICK HANDLER âââââââââââââââââââ */
+/*  PICK HANDLER  */
 function handlePich(round, gi, team) {
   setPick(currentUser, round, gi, team);
   renderPicksShell();
@@ -639,7 +639,7 @@ function handlePich(round, gi, team) {
 }
 function debounceSave() {
   const st = document.getElementById('save-status');
-  if (st) { st.textContent = 'Savingâ¦'; st.className = 'save-status saving'; }
+  if (st) { st.textContent = 'Saving'; st.className = 'save-status saving'; }
   clearTimeout(saveTimer);
   saveTimer = setTimeout(doSave, 700);
 }
@@ -653,13 +653,13 @@ async function doSave() {
       body: JSON.stringify(picks),
     });
     if (st) {
-      if (r.ok) { st.textContent = 'Saved â'; st.className = 'save-status saved'; setTimeout(()=>{ if(st) { st.textContent=''; st.className='save-status'; } }, 2000); }
+      if (r.ok) { st.textContent = 'Saved '; st.className = 'save-status saved'; setTimeout(()=>{ if(st) { st.textContent=''; st.className='save-status'; } }, 2000); }
       else       { st.textContent = 'Save failed'; st.className = 'save-status'; }
     }
   } catch { if (st) { st.textContent = 'Network err'; st.className = 'save-status'; } }
 }
 
-/* âââââââââââââââââââ SCORES âââââââââââââââââââ */
+/*  SCORES  */
 function renderScores() {
   const el = document.getElementById('scores');
   if (!scoresData.length) { el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>No games right now.</p></div>'; return; }
@@ -671,10 +671,10 @@ function renderScores() {
     let h = `<div class="section-label">${label}</div><div class="scores-grid">`;
     games.forEach(g => {
       const lv=g.statusState==='in', fn=g.statusState==='post';
-      const sl = lv?`LIVE Â· ${g.statusDetail||''}`:fn?'FINAL':g.statusDetail||'Scheduled';
+      const sl = lv?`LIVE  ${g.statusDetail||''}`:fn?'FINAL':g.statusDetail||'Scheduled';
       h += `<div class="score-card"><div class="score-status-bar ${lv?'live':fn?'final':''}">${sl}</div>`;
       (g.teams||[]).forEach(t => {
-        h += `<div class="score-team ${t.winner?'winner':''}"><div class="sn">${t.name||t.abbr||''}</div><div class="sp">${t.score!==undefined?t.score:'â'}</div></div>`;
+        h += `<div class="score-team ${t.winner?'winner':''}"><div class="sn">${t.name||t.abbr||''}</div><div class="sp">${t.score!==undefined?t.score:''}</div></div>`;
       });
       h += `</div>`;
     });
@@ -683,7 +683,7 @@ function renderScores() {
   el.innerHTML = grp(live,'Live') + grp(soon,'Upcoming') + grp(done,'Final') || '<div class="empty-state"><div class="icon"></div><p>No games to show.</p></div>';
 }
 
-/* âââââââââââââââââââ COMPARE âââââââââââââââââââ */
+/*  COMPARE  */
 function allTeamsList() {
   if (!bracketData) return [];
   const out = [];
@@ -713,8 +713,8 @@ function renderCompare() {
         const info  = teams.find(t=>t.name===team);
         const color = info ? REGION_COLORS[info.region] : '#5a7fa0';
         const cells = USERS.map(u => perUser[u].includes(team)
-          ? `<div class="cc has">â</div>`
-          : `<div class="cc" style="color:var(--muted)">â</div>`
+          ? `<div class="cc has"></div>`
+          : `<div class="cc" style="color:var(--muted)"></div>`
         ).join('');
         h += `<div class="compare-row"><div class="ct"><div style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></div>${info?info.seed+' ':''}${team}</div>${cells}</div>`;
       });
@@ -724,7 +724,7 @@ function renderCompare() {
   el.innerHTML = h;
 }
 
-/* âââââââââââââââââââ SSE âââââââââââââââââââ */
+/*  SSE  */
 function connectSSE() {
   const dot  = document.getElementById('live-dot');
   const text = document.getElementById('live-text');
@@ -739,12 +739,12 @@ function connectSSE() {
     } catch {}
   };
   es.onerror = () => {
-    text.textContent = 'Reconnectingâ¦'; dot.classList.remove('red');
+    text.textContent = 'Reconnecting'; dot.classList.remove('red');
     es.close(); setTimeout(connectSSE, 5000);
   };
 }
 
-/* âââââââââââââââââââ INIT âââââââââââââââââââ */
+/*  INIT  */
 loadAll();
 connectSSE();
 </script>
