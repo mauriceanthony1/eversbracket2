@@ -35,8 +35,8 @@ async function sbUpsert(table, row) {
 }
 
 // ── In-memory cache (refreshed from Supabase on startup) ──────
-let picksCache   = {};
-let resultsCache = {};
+let picksCache   = {};   // { PME: {R64:[...], ...}, Phil: {...}, Reece: {...} }
+let resultsCache = {};   // { E1: 'Duke', r32_Iowa: 'Iowa', ... }
 
 async function loadCache() {
   try {
@@ -46,7 +46,7 @@ async function loadCache() {
     }
     for (const user of USERS) {
       if (!picksCache[user]) {
-        console.log(`Seeding picks for ${user} from backup…`);
+        console.log(`Seeding picks for ${user} from backup`);
         await sbUpsert('bracket_picks', { user_name: user, picks: SEED_PICKS[user] });
         picksCache[user] = SEED_PICKS[user];
       }
@@ -55,15 +55,46 @@ async function loadCache() {
     if (Array.isArray(rrows)) {
       rrows.forEach(r => { resultsCache[r.game_id] = r.winner; });
     }
-    console.log('Cache loaded. Picks:', Object.keys(picksCache), '| Results:', Object.keys(resultsCache).length, 'games');
+    console.log('Cache loaded. Picks:', Object.keys(picksCache), '| Results:', Object.keys(resultsCache).length);
   } catch (e) {
-    console.error('Cache load error (continuing with seed data):', e.message);
+    console.error('Cache load error:', e.message);
     USERS.forEach(u => { if (!picksCache[u]) picksCache[u] = SEED_PICKS[u]; });
   }
 }
 
+// ── Round-aware winner sets ────────────────────────────────────
+// game_id prefix determines which rounds a win counts for:
+//   chip_*  → all 6 rounds
+//   f4_*    → R64, R32, S16, E8, F4
+//   e8_*    → R64, R32, S16, E8
+//   s16_*   → R64, R32, S16
+//   r32_*   → R64, R32
+//   E/W/S/M slot IDs (E1-E8 etc.) → R64 only
+function buildRoundWinners() {
+  const rw = {};
+  ROUNDS.forEach(r => { rw[r] = new Set(); });
+  Object.entries(resultsCache).forEach(([id, winner]) => {
+    const lo = id.toLowerCase();
+    if (lo.startsWith('chip')) {
+      ROUNDS.forEach(r => rw[r].add(winner));
+    } else if (lo.startsWith('f4')) {
+      ['R64','R32','S16','E8','F4'].forEach(r => rw[r].add(winner));
+    } else if (lo.startsWith('e8')) {
+      ['R64','R32','S16','E8'].forEach(r => rw[r].add(winner));
+    } else if (lo.startsWith('s16')) {
+      ['R64','R32','S16'].forEach(r => rw[r].add(winner));
+    } else if (lo.startsWith('r32')) {
+      ['R64','R32'].forEach(r => rw[r].add(winner));
+    } else {
+      rw['R64'].add(winner);
+    }
+  });
+  return rw;
+}
+
 // ── Leaderboard calculation ───────────────────────────────────
 function calcLeaderboard() {
+  const roundWinners = buildRoundWinners();
   return USERS.map(user => {
     const picks  = picksCache[user] || {};
     let points   = 0;
@@ -72,8 +103,11 @@ function calcLeaderboard() {
     ROUNDS.forEach(rnd => {
       rounds[rnd] = 0;
       (picks[rnd] || []).forEach(team => {
-        const isCorrect = Object.values(resultsCache).includes(team);
-        if (isCorrect) { points += SCORING[rnd]; correct += 1; rounds[rnd]++; }
+        if (roundWinners[rnd].has(team)) {
+          points  += SCORING[rnd];
+          correct += 1;
+          rounds[rnd]++;
+        }
       });
     });
     return { user, points, correct, rounds };
@@ -147,6 +181,8 @@ app.post('/api/picks/:user', async (req, res) => {
   res.json({ ok });
 });
 
+// Admin: POST /api/results  body: { game_id, winner, secret }
+// game_id prefix controls which rounds count: r32_*, s16_*, e8_*, f4_*, chip_*
 app.post('/api/results', async (req, res) => {
   const { game_id, winner, secret } = req.body;
   if (secret !== process.env.ADMIN_SECRET) return res.status(403).json({ error: 'Forbidden' });
