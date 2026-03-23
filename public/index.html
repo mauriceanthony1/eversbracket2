@@ -258,7 +258,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 <body>
 
 <header>
-  <h1>ð 2026 NCAA Bracket Challenge</h1>
+  <h1>2026 NCAA Bracket Challenge</h1>
   <div class="live-badge">
     <div class="live-dot" id="live-dot"></div>
     <span id="live-text">Connectingâ¦</span>
@@ -266,11 +266,11 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 </header>
 
 <nav class="main-nav">
-  <button data-tab="leaderboard" class="active">ð Board</button>
-  <button data-tab="bracket">ð Bracket</button>
-  <button data-tab="picks">ð¯ Picks</button>
-  <button data-tab="scores">ðº Scores</button>
-  <button data-tab="compare">ð Compare</button>
+  <button data-tab="leaderboard" class="active">Board</button>
+  <button data-tab="bracket">Bracket</button>
+  <button data-tab="picks">Picks</button>
+  <button data-tab="scores">Scores</button>
+  <button data-tab="compare">Compare</button>
 </nav>
 
 <div id="leaderboard" class="tab-pane" style="display:block"></div>
@@ -392,7 +392,7 @@ async function loadAll() {
 function renderLeaderboard() {
   const el = document.getElementById('leaderboard');
   if (!leaderboardData.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">ð</div><p>Loadingâ¦</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Loadingâ¦</p></div>';
     return;
   }
   let h = '<div class="leaderboard-card">';
@@ -400,7 +400,7 @@ function renderLeaderboard() {
   leaderboardData.forEach((row, i) => {
     const med = ['rank-1','rank-2','rank-3'][i] || '';
     h += `<div class="lb-row">
-      <div class="rank ${med}">${i===0?'ð¥':i===1?'ð¥':i===2?'ð¥':i+1}</div>
+      <div class="rank ${med}">${i+1}</div>
       <div class="lb-user">${row.user}</div>
       <div class="lb-pts">${row.points}</div>
       <div class="lb-correct">${row.correct}</div>
@@ -429,7 +429,7 @@ function getGameScore(t1, t2) {
 }
 function renderBracket() {
   const el = document.getElementById('bracket');
-  if (!bracketData) { el.innerHTML = '<div class="empty-state"><div class="icon">ð</div><p>Loadingâ¦</p></div>'; return; }
+  if (!bracketData) { el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>Loadingâ¦</p></div>'; return; }
   let h = '';
   Object.entries(bracketData.bracket).forEach(([region, matchups]) => {
     h += `<div class="region-title ${region.toLowerCase()}">${region} REGION</div>`;
@@ -662,7 +662,7 @@ async function doSave() {
 /* âââââââââââââââââââ SCORES âââââââââââââââââââ */
 function renderScores() {
   const el = document.getElementById('scores');
-  if (!scoresData.length) { el.innerHTML = '<div class="empty-state"><div class="icon">ðº</div><p>No games right now.</p></div>'; return; }
+  if (!scoresData.length) { el.innerHTML = '<div class="empty-state"><div class="icon"></div><p>No games right now.</p></div>'; return; }
   const live = scoresData.filter(g=>g.statusState==='in');
   const done = scoresData.filter(g=>g.statusState==='post');
   const soon = scoresData.filter(g=>g.statusState==='pre');
@@ -680,7 +680,7 @@ function renderScores() {
     });
     return h + `</div>`;
   };
-  el.innerHTML = grp(live,'Live') + grp(soon,'Upcoming') + grp(done,'Final') || '<div class="empty-state"><div class="icon">ðº</div><p>No games to show.</p></div>';
+  el.innerHTML = grp(live,'Live') + grp(soon,'Upcoming') + grp(done,'Final') || '<div class="empty-state"><div class="icon"></div><p>No games to show.</p></div>';
 }
 
 /* âââââââââââââââââââ COMPARE âââââââââââââââââââ */
