@@ -188,9 +188,9 @@ app.get('/api/stream', async (req, res) => {
   req.on('close', () => sseClients.delete(res));
 });
 
-// Fallback route for all other pages
+// Fallback route - serve index.html (Render puts files in /src)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'src', 'index.html'));
 });
 
 // Start server
