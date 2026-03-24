@@ -48,13 +48,16 @@ async function sbUpsert(table, row) {
 // Cache + other functions (unchanged)
 let picksCache = {};
 let resultsCache = {};
+let picksLocked = false;
 
 async function loadCache() {
   console.log('Loading cache... Supabase:', !!SB_URL);
   try {
     const rows = await sbGet('bracket_picks');
     if (Array.isArray(rows) && rows.length > 0) {
-      rows.forEach(r => picksCache[r.user_name] = r.picks);
+      rows.forEach(r => { if (r.user_name !== '__lock__') picksCache[r.user_name] = r.picks; });
+      const lockRow = rows.find(r => r.user_name === '__lock__');
+      if (lockRow && lockRow.picks && lockRow.picks.locked) picksLocked = true;
     }
     for (const user of USERS) {
       if (!picksCache[user]) {
@@ -149,6 +152,7 @@ app.get('/api/picks/:user', (req, res) => {
 app.post('/api/picks/:user', async (req, res) => {
   const user = req.params.user;
   if (!USERS.includes(user)) return res.status(404).json({ error: 'User not found' });
+  if (picksLocked) return res.status(423).json({ error: 'Picks are locked' });
   picksCache[user] = req.body;
   await sbUpsert('bracket_picks', { user_name: user, picks: req.body });
   broadcast({ type: 'picks', user, picks: req.body });
@@ -175,7 +179,17 @@ app.get('/api/stream', async (req, res) => {
   res.write(`data: ${JSON.stringify({ type: 'scores', data: await fetchScores() })}\n\n`);
   USERS.forEach(u => res.write(`data: ${JSON.stringify({ type: 'picks', user: u, picks: picksCache[u] || {} })}\n\n`));
 
+  res.write('data: ' + JSON.stringify({ type: 'lock', locked: picksLocked }) + '\n\n');
   req.on('close', () => sseClients.delete(res));
+});
+
+app.post('/api/admin/lock', async (req, res) => {
+  const { locked, secret } = req.body;
+  if (secret !== process.env.ADMIN_SECRET) return res.status(403).json({ error: 'Forbidden' });
+  picksLocked = !!locked;
+  await sbUpsert('bracket_picks', { user_name: '__lock__', picks: { locked: picksLocked } });
+  broadcast({ type: 'lock', locked: picksLocked });
+  res.json({ ok: true, locked: picksLocked });
 });
 
 // Fallback route
