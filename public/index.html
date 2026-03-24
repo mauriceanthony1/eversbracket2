@@ -496,12 +496,9 @@ function buildRegionTree(region) {
   const r32p = Array.from({length:4}, (_,i) => gp(u,'R32', off.R32+i));
   const s16p = Array.from({length:2}, (_,i) => gp(u,'S16', off.S16+i));
   const e8p  = gp(u,'E8', off.E8);
-  const r64Done = r64p.filter(p=>p).length;
-  const r32Done = r32p.filter(p=>p).length;
-  const s16Done = s16p.filter(p=>p).length;
-  const r32Unlock = r64Done === 8;
-  const s16Unlock = r32Unlock && r32Done === 4;
-  const e8Unlock  = s16Unlock && s16Done === 2;
+  const r32Unlock = true;
+  const s16Unlock = true;
+  const e8Unlock  = true;
   const G = `<div class="b-gap"></div>`;
   let h = '';
   h += `<div class="b-col">${colHdr('R64','1')}`;
@@ -579,7 +576,7 @@ function buildFFTree() {
     h += `</div>`;
   });
   h += `</div>${G}`;
-  if (!allE8) {
+  if (false) {
     h += `<div class="b-col">${colHdr('F4','16')}${lockedInner('Pick all 4 regional champs')}</div>`;
   } else {
     h += `<div class="b-col">${colHdr('F4','16')}`;
@@ -591,7 +588,7 @@ function buildFFTree() {
     h += `</div></div>`;
   }
   h += G;
-  if (!allF4) {
+  if (false) {
     const hint = !allE8 ? 'Unlock F4 first' : 'Pick both F4 winners';
     h += `<div class="b-col">${colHdr('CHIP','32')}${lockedInner(hint)}</div>`;
   } else {
@@ -632,7 +629,7 @@ function advCard(gi, round, tA, tB, pick, regionColor) {
 }
 
 /*  PICK HANDLER  */
-function handlePich(round, gi, team) {
+function handlePick(round, gi, team) {
   setPick(currentUser, round, gi, team);
   renderPicksShell();
   debounceSave();
