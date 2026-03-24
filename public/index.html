@@ -605,17 +605,17 @@ function buildFFTree() {
 
 /*  Card helpers  */
 function colHdr(round, pts) { return `<div class="b-col-hdr">${ROUND_SHORT[round]} <span>${pts}pt</span></div>`; }
-function lockedInner(hint)  { return `<div class="b-lock-inner"><div class="li"></div><div class="ll">Locked</div><div class="lh">${hint}</div></div>`; }
+function lockedInner(hint)  { return `<div class="b-lock-inner"><div class="li">&#128274;</div><div class="ll">Locked</div><div class="lh">${hint}</div></div>`; }
 function r64Card(gi, t1, s1, t2, s2, pick, regionColor) {
   const p1=pick===t1, p2=pick===t2;
   const esc = s => s.replace(/'/g,"\\'");
   return `<div class="b-game">
     <div class="b-team ${p1?'b-picked':''}" onclick="handlePick('R64',${gi},'${esc(t1)}')">
-      <div class="b-seed-num">${s1}</div><div class="b-tname">${t1}</div>${p1?'<div class="b-chk"></div>':''}
+      <div class="b-seed-num">${s1}</div><div class="b-tname">${t1}</div>${p1?'<div class="b-chk">&#10003;</div>':''}
     </div>
     <div class="b-vs">VS</div>
     <div class="b-team ${p2?'b-picked':''}" onclick="handlePick('R64',${gi},'${esc(t2)}')">
-      <div class="b-seed-num">${s2}</div><div class="b-tname">${t2}</div>${p2?'<div class="b-chk"></div>':''}
+      <div class="b-seed-num">${s2}</div><div class="b-tname">${t2}</div>${p2?'<div class="b-chk">&#10003;</div>':''}
     </div>
   </div>`;
 }
@@ -625,9 +625,9 @@ function advCard(gi, round, tA, tB, pick, regionColor) {
   const rowA = tA ? `<div class="b-team ${pA?'b-picked':''}" onclick="handlePick('${round}',${gi},'${esc(tA)}')">` : `<div class="b-team b-disabled">`;
   const rowB = tB ? `<div class="b-team ${pB?'b-picked':''}" onclick="handlePick('${round}',${gi},'${esc(tB)}')">` : `<div class="b-team b-disabled">`;
   return `<div class="b-game">
-    ${rowA}<div class="b-tname">${tA||'TBD'}</div>${pA?'<div class="b-chk"></div>':''}</div>
+    ${rowA}<div class="b-tname">${tA||'TBD'}</div>${pA?'<div class="b-chk">&#10003;</div>':''}</div>
     <div class="b-vs">VS</div>
-    ${rowB}<div class="b-tname">${tB||'TBD'}</div>${pB?'<div class="b-chk"></div>':''}</div>
+    ${rowB}<div class="b-tname">${tB||'TBD'}</div>${pB?'<div class="b-chk">&#10003;</div>':''}</div>
   </div>`;
 }
 
