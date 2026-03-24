@@ -18,8 +18,8 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Serve static files from src folder
-app.use(express.static(path.join(__dirname, 'src')));
+// Serve static files from ROOT (where index.html actually lives)
+app.use(express.static(__dirname));
 
 // Supabase helpers
 const SB_URL = process.env.SUPABASE_URL;
@@ -46,7 +46,7 @@ async function sbUpsert(table, row) {
   } catch (e) { console.error('sbUpsert error:', e.message); return false; }
 }
 
-// Cache
+// Cache + other functions (unchanged)
 let picksCache = {};
 let resultsCache = {};
 
@@ -179,9 +179,9 @@ app.get('/api/stream', async (req, res) => {
   req.on('close', () => sseClients.delete(res));
 });
 
-// FIXED fallback route for Render
+// FIXED fallback - serve index.html from ROOT
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'src', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Start
