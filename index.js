@@ -178,9 +178,10 @@ app.get('/api/stream', async (req, res) => {
   req.on('close', () => sseClients.delete(res));
 });
 
-// FIXED fallback - serve index.html from ROOT
+// Fallback route
 app.get('*', (req, res) => {
-path.join(__dirname, 'public', 'index.html')
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Start
 loadCache().then(() => {
