@@ -8,7 +8,7 @@ const { BRACKET, SEED_PICKS, SCORING, USERS, ROUNDS } = require('./data');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS for all routes
+// CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -18,10 +18,10 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Serve static files from the 'src' folder (this is where Render puts your files)
+// Serve static files from src folder
 app.use(express.static(path.join(__dirname, 'src')));
 
-// ── Supabase helpers ─────────────────────────────────────
+// Supabase helpers
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_KEY;
 
@@ -29,14 +29,9 @@ async function sbGet(table) {
   if (!SB_URL || !SB_KEY) return [];
   try {
     const url = `${SB_URL}/rest/v1/${table}?select=*`;
-    const r = await fetch(url, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
-    });
+    const r = await fetch(url, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
     return r.ok ? await r.json() : [];
-  } catch (e) { 
-    console.error('sbGet error:', e.message); 
-    return []; 
-  }
+  } catch (e) { console.error('sbGet error:', e.message); return []; }
 }
 
 async function sbUpsert(table, row) {
@@ -44,36 +39,24 @@ async function sbUpsert(table, row) {
   try {
     const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
       method: 'POST',
-      headers: {
-        apikey: SB_KEY,
-        Authorization: `Bearer ${SB_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates'
-      },
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
       body: JSON.stringify(row)
     });
     return r.ok;
-  } catch (e) { 
-    console.error('sbUpsert error:', e.message); 
-    return false; 
-  }
+  } catch (e) { console.error('sbUpsert error:', e.message); return false; }
 }
 
-// In-memory cache
+// Cache
 let picksCache = {};
 let resultsCache = {};
 
 async function loadCache() {
-  console.log('Loading cache... Supabase connected:', !!SB_URL);
+  console.log('Loading cache... Supabase:', !!SB_URL);
   try {
     const rows = await sbGet('bracket_picks');
     if (Array.isArray(rows) && rows.length > 0) {
       rows.forEach(r => picksCache[r.user_name] = r.picks);
-      console.log('Loaded picks from Supabase for:', Object.keys(picksCache));
-    } else {
-      console.log('No picks in Supabase - using seed data');
     }
-
     for (const user of USERS) {
       if (!picksCache[user]) {
         console.log(`Seeding ${user}`);
@@ -81,12 +64,8 @@ async function loadCache() {
         picksCache[user] = SEED_PICKS[user];
       }
     }
-
     const rrows = await sbGet('bracket_results');
-    if (Array.isArray(rrows)) {
-      rrows.forEach(r => resultsCache[r.game_id] = r.winner);
-    }
-
+    if (Array.isArray(rrows)) rrows.forEach(r => resultsCache[r.game_id] = r.winner);
     console.log(`Cache ready → Users: ${Object.keys(picksCache).length} | Results: ${Object.keys(resultsCache).length}`);
   } catch (e) {
     console.error('Cache load failed:', e.message);
@@ -113,4 +92,103 @@ function calcLeaderboard() {
   const roundWinners = buildRoundWinners();
   return USERS.map(user => {
     const picks = picksCache[user] || {};
-    let points = 0
+    let points = 0, correct = 0;
+    const rounds = {};
+    ROUNDS.forEach(rnd => {
+      rounds[rnd] = 0;
+      (picks[rnd] || []).forEach(team => {
+        if (roundWinners[rnd].has(team)) {
+          points += SCORING[rnd];
+          correct += 1;
+          rounds[rnd]++;
+        }
+      });
+    });
+    return { user, points, correct, rounds };
+  }).sort((a, b) => b.points - a.points || b.correct - a.correct);
+}
+
+async function fetchScores() {
+  try {
+    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&limit=200');
+    const d = await r.json();
+    return (d.events || []).map(e => {
+      const comp = e.competitions?.[0];
+      return {
+        id: e.id,
+        statusState: comp?.status?.type?.state,
+        statusDetail: comp?.status?.type?.shortDetail,
+        teams: (comp?.competitors || []).map(t => ({ name: t.team?.displayName, score: t.score, winner: t.winner }))
+      };
+    });
+  } catch { return []; }
+}
+
+const sseClients = new Set();
+function broadcast(payload) {
+  const msg = `data: ${JSON.stringify(payload)}\n\n`;
+  sseClients.forEach(res => { try { res.write(msg); } catch {} });
+}
+
+setInterval(async () => {
+  const games = await fetchScores();
+  broadcast({ type: 'scores', data: games });
+  broadcast({ type: 'leaderboard', data: calcLeaderboard() });
+}, 45000);
+
+// API Routes
+app.get('/api/bracket', (_, res) => res.json(BRACKET));
+app.get('/api/scores', async (_, res) => res.json({ games: await fetchScores() }));
+app.get('/api/leaderboard', (_, res) => res.json({ leaderboard: calcLeaderboard() }));
+
+app.get('/api/picks/:user', (req, res) => {
+  const user = req.params.user;
+  if (!USERS.includes(user)) return res.status(404).json({ error: 'User not found' });
+  res.json({ user, picks: picksCache[user] || {} });
+});
+
+app.post('/api/picks/:user', async (req, res) => {
+  const user = req.params.user;
+  if (!USERS.includes(user)) return res.status(404).json({ error: 'User not found' });
+  picksCache[user] = req.body;
+  await sbUpsert('bracket_picks', { user_name: user, picks: req.body });
+  broadcast({ type: 'picks', user, picks: req.body });
+  res.json({ ok: true });
+});
+
+app.post('/api/results', async (req, res) => {
+  const { game_id, winner, secret } = req.body;
+  if (secret !== process.env.ADMIN_SECRET) return res.status(403).json({ error: 'Forbidden' });
+  resultsCache[game_id] = winner;
+  await sbUpsert('bracket_results', { game_id, winner });
+  broadcast({ type: 'leaderboard', data: calcLeaderboard() });
+  res.json({ ok: true });
+});
+
+app.get('/api/stream', async (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+  sseClients.add(res);
+
+  res.write(`data: ${JSON.stringify({ type: 'leaderboard', data: calcLeaderboard() })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: 'scores', data: await fetchScores() })}\n\n`);
+  USERS.forEach(u => res.write(`data: ${JSON.stringify({ type: 'picks', user: u, picks: picksCache[u] || {} })}\n\n`));
+
+  req.on('close', () => sseClients.delete(res));
+});
+
+// FIXED fallback route for Render
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'index.html'));
+});
+
+// Start
+loadCache().then(() => {
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`Supabase: ${SB_URL ? 'CONNECTED' : 'NOT SET'}`);
+    console.log(`Admin secret: ${process.env.ADMIN_SECRET ? 'SET' : 'NOT SET'}`);
+  });
+});
