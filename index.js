@@ -19,8 +19,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Serve static files from ROOT (where index.html actually lives)
-app.use(express.static(__dirname));
-
+app.use(express.static(path.join(__dirname, 'public')));
 // Supabase helpers
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_KEY;
@@ -181,8 +180,7 @@ app.get('/api/stream', async (req, res) => {
 
 // FIXED fallback - serve index.html from ROOT
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+path.join(__dirname, 'public', 'index.html')
 
 // Start
 loadCache().then(() => {
