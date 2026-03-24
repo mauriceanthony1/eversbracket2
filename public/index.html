@@ -195,6 +195,8 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 .b-team.b-picked { background: #1a2e1a; color: var(--green); }
 .b-team.b-disabled { cursor: default; color: var(--muted); font-style: italic; }
 .b-team.b-disabled:hover { background: none; }
+.b-game.b-locked .b-team { cursor: default; }
+.b-game.b-locked .b-team:hover { background: none; }
 .b-seed-num { font-size: .65rem; color: var(--muted); width: 14px; text-align: right; font-weight: 700; flex-shrink: 0; }
 .b-sdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .b-tname { flex: 1; font-weight: 500; }
@@ -259,7 +261,7 @@ nav.main-nav button.active { color: var(--accent); border-bottom-color: var(--ac
 
 <header>
   <h1>2026 NCAA Bracket Challenge</h1>
-  <div class="live-badge">
+  <div style="display:flex;align-items:center;gap:10px"><button id="lock-btn" onclick="toggleLock()" title="Lock/unlock picks" style="background:none;border:none;cursor:pointer;font-size:.85rem;padding:2px;color:var(--muted);line-height:1">🔓</button><div class="live-badge">
     <div class="live-dot" id="live-dot"></div>
     <span id="live-text">Connecting</span>
   </div>
@@ -313,6 +315,7 @@ let currentUser    = 'PME';
 let currentRegion  = 'EAST';
 let currentTab     = 'leaderboard';
 let saveTimer      = null;
+let picksLocked = false;
 
 /*  NAV  */
 function showTab(tab) {
@@ -486,6 +489,7 @@ function renderBracketTree() {
   const ct = document.getElementById('b-tree');
   if (!bracketData) { ct.innerHTML = '<div style="padding:40px;color:var(--muted)">Loading</div>'; return; }
   ct.innerHTML = currentRegion === 'FF' ? buildFFTree() : buildRegionTree(currentRegion);
+  applyLockState();
 }
 function buildRegionTree(region) {
   const off = ROFF[region];
@@ -634,6 +638,25 @@ function handlePick(round, gi, team) {
   renderPicksShell();
   debounceSave();
 }
+function applyLockState() {
+  const btn = document.getElementById('lock-btn');
+  if (btn) btn.textContent = picksLocked ? '🔒' : '🔓';
+  if (!picksLocked) return;
+  document.querySelectorAll('#b-tree .b-team').forEach(el => {
+    el.onclick = null; el.style.cursor = 'default';
+    const g = el.closest('.b-game'); if (g) g.classList.add('b-locked');
+  });
+}
+async function toggleLock() {
+  const action = picksLocked ? 'unlock' : 'lock';
+  const secret = window.prompt('Admin secret to ' + action + ' picks:');
+  if (!secret) return;
+  try {
+    const r2 = await fetch('/api/admin/lock', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ locked: !picksLocked, secret }) });
+    if (r2.status === 403) { showToast('Wrong secret'); return; }
+    if (r2.ok) showToast(picksLocked ? 'Picks unlocked' : 'Picks locked 🔒');
+  } catch { showToast('Error toggling lock'); }
+}
 function debounceSave() {
   const st = document.getElementById('save-status');
   if (st) { st.textContent = 'Saving'; st.className = 'save-status saving'; }
@@ -641,6 +664,7 @@ function debounceSave() {
   saveTimer = setTimeout(doSave, 700);
 }
 async function doSave() {
+  if (picksLocked) return;
   const st = document.getElementById('save-status');
   const picks = allPicks[currentUser] || {};
   try {
@@ -732,7 +756,8 @@ function connectSSE() {
       const msg = JSON.parse(e.data);
       if (msg.type === 'scores')      { scoresData = msg.data || []; if (currentTab==='scores') renderScores(); if (currentTab==='bracket') renderBracket(); }
       if (msg.type === 'leaderboard') { leaderboardData = msg.data || []; if (currentTab==='leaderboard') renderLeaderboard(); }
-      if (msg.type === 'picks')       { allPicks[msg.user] = msg.picks; if (currentTab==='picks') renderPicksShell(); if (currentTab==='compare') renderCompare(); }
+      if (msg.type === 'lock') { picksLocked = msg.locked; applyLockState(); return; }
+    if (msg.type === 'picks')       { allPicks[msg.user] = msg.picks; if (currentTab==='picks') renderPicksShell(); if (currentTab==='compare') renderCompare(); }
     } catch {}
   };
   es.onerror = () => {
