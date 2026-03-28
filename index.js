@@ -110,20 +110,97 @@ function calcLeaderboard() {
   }).sort((a, b) => b.points - a.points || b.correct - a.correct);
 }
 
-async function fetchScores() {
+// ── Auto-scoring helpers ──────────────────────────────────────────────────────
+
+// All bracket team short-names for fuzzy matching
+const ALL_BRACKET_TEAMS = [...new Set(
+  Object.values(BRACKET.bracket).flatMap(matchups =>
+    matchups.flatMap(m => [m.team1, m.team2])
+  )
+)];
+
+// Map an ESPN full display name → bracket short name (e.g. "Duke Blue Devils" → "Duke")
+function espnToBracketName(espnName) {
+  if (!espnName) return null;
+  const lower = espnName.toLowerCase();
+  return ALL_BRACKET_TEAMS.find(short =>
+    lower.includes(short.split(' ')[0].toLowerCase())
+  ) || null;
+}
+
+// Detect tournament round from ESPN competition notes / event name
+function detectRound(event) {
+  const comp = event.competitions?.[0];
+  const notes = (comp?.notes || []).map(n => (n.headline || n.type || '')).join(' ');
+  const eventName = event.name || event.shortName || '';
+  const text = (notes + ' ' + eventName).toLowerCase();
+
+  if (text.includes('first round') || text.includes('round of 64'))  return 'R64';
+  if (text.includes('second round') || text.includes('round of 32')) return 'R32';
+  if (text.includes('sweet 16') || text.includes('sweet sixteen'))   return 'S16';
+  if (text.includes('elite eight') || text.includes('elite 8'))      return 'E8';
+  if (text.includes('final four'))                                    return 'F4';
+  if (text.includes('national championship') || text.includes('championship game')) return 'CHIP';
+  return null;
+}
+
+// Auto-score any finished ESPN games not yet in resultsCache
+async function autoScoreFromESPN(rawEvents) {
+  let leaderboardChanged = false;
+
+  for (const event of rawEvents) {
+    const comp = event.competitions?.[0];
+    if (!comp || comp.status?.type?.state !== 'post') continue;
+
+    const round = detectRound(event);
+    if (!round) continue;
+
+    const winnerComp = comp.competitors?.find(t => t.winner);
+    if (!winnerComp) continue;
+
+    const winnerShort = espnToBracketName(winnerComp.team?.displayName);
+    if (!winnerShort) continue;
+
+    // Use ESPN event ID + round as stable game_id (prefix must match round for buildRoundWinners)
+    const gameId = `${round.toLowerCase()}_espn_${event.id}`;
+    if (resultsCache[gameId]) continue; // already recorded
+
+    console.log(`[auto-score] ${round}: ${winnerShort} (ESPN id ${event.id})`);
+    resultsCache[gameId] = winnerShort;
+    await sbUpsert('bracket_results', { game_id: gameId, winner: winnerShort });
+    leaderboardChanged = true;
+  }
+
+  return leaderboardChanged;
+}
+
+// ── ESPN fetch (raw events for auto-scoring + formatted for display) ──────────
+async function fetchRawEvents() {
   try {
     const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&limit=200');
     const d = await r.json();
-    return (d.events || []).map(e => {
-      const comp = e.competitions?.[0];
-      return {
-        id: e.id,
-        statusState: comp?.status?.type?.state,
-        statusDetail: comp?.status?.type?.shortDetail,
-        teams: (comp?.competitors || []).map(t => ({ name: t.team?.displayName, score: t.score, winner: t.winner }))
-      };
-    });
+    return d.events || [];
   } catch { return []; }
+}
+
+function formatScores(rawEvents) {
+  return rawEvents.map(e => {
+    const comp = e.competitions?.[0];
+    return {
+      id: e.id,
+      statusState: comp?.status?.type?.state,
+      statusDetail: comp?.status?.type?.shortDetail,
+      teams: (comp?.competitors || []).map(t => ({
+        name: t.team?.displayName,
+        score: t.score,
+        winner: t.winner
+      }))
+    };
+  });
+}
+
+async function fetchScores() {
+  return formatScores(await fetchRawEvents());
 }
 
 const sseClients = new Set();
@@ -133,8 +210,13 @@ function broadcast(payload) {
 }
 
 setInterval(async () => {
-  const games = await fetchScores();
-  broadcast({ type: 'scores', data: games });
+  const rawEvents = await fetchRawEvents();
+
+  // Auto-score any newly finished games
+  const changed = await autoScoreFromESPN(rawEvents);
+
+  broadcast({ type: 'scores', data: formatScores(rawEvents) });
+  // Always broadcast leaderboard; if scoring changed it will reflect new points
   broadcast({ type: 'leaderboard', data: calcLeaderboard() });
 }, 45000);
 
