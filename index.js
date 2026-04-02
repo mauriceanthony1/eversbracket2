@@ -119,13 +119,33 @@ const ALL_BRACKET_TEAMS = [...new Set(
   )
 )];
 
+// Manual overrides for ESPN display names that don't contain the bracket short-name
+// (e.g. "Miami FL" won't appear in "Miami Hurricanes") or that are ambiguous.
+const ESPN_NAME_OVERRIDES = {
+  'miami hurricanes':        'Miami FL',
+  'miami (fl)':              'Miami FL',
+  'miami ohio redhawks':     'Miami OH',
+  'miami ohio':              'Miami OH',
+  'miami (oh)':              'Miami OH',
+  "saint mary's gaels":      'Saint Marys',
+  "st. mary's gaels":        'Saint Marys',
+  "saint mary's":            'Saint Marys',
+  "st. mary's":              'Saint Marys',
+};
+
 // Map an ESPN full display name → bracket short name (e.g. "Duke Blue Devils" → "Duke")
+// Sorted longest-first so "Michigan State" matches before "Michigan", "Iowa State" before "Iowa", etc.
 function espnToBracketName(espnName) {
   if (!espnName) return null;
   const lower = espnName.toLowerCase();
-  return ALL_BRACKET_TEAMS.find(short =>
-    lower.includes(short.split(' ')[0].toLowerCase())
-  ) || null;
+
+  // Check explicit overrides first (handles abbreviations like "Miami FL")
+  if (ESPN_NAME_OVERRIDES[lower]) return ESPN_NAME_OVERRIDES[lower];
+
+  // Sort by full name length descending so more-specific names win:
+  // "Michigan State Spartans" → matches "Michigan State" (15 chars) before "Michigan" (8 chars)
+  const sorted = [...ALL_BRACKET_TEAMS].sort((a, b) => b.length - a.length);
+  return sorted.find(short => lower.includes(short.toLowerCase())) || null;
 }
 
 // Detect tournament round from ESPN competition notes / event name
